@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astra United — The Breakaway</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #0a0e17;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  #preloader {
+    position: fixed;
+    inset: 0;
+    background: #0a0e17;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  #preloader .logo-wrap {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 30px;
+    position: relative;
+    animation: pulseLogo 2s ease-in-out infinite;
+  }
+  #preloader .logo-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.4));
+  }
+  @keyframes pulseLogo {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  #preloader .bar {
+    width: 260px;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  #preloader .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 12px rgba(220,38,38,0.6);
+  }
+  #preloader .pct {
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    margin-top: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  #viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+  #canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Cinematic overlays */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 11;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+  .color-grade {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 12;
+    background: linear-gradient(180deg, rgba(10,14,23,0.3) 0%, transparent 40%, transparent 60%, rgba(10,14,23,0.4) 100%);
+  }
+  .flare {
+    position: fixed;
+    top: -10%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 9;
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  .flare.active { opacity: 1; }
+
+  /* Logo reveal */
+  #logo-reveal {
+    position: fixed;
+    bottom: 8vh;
+    left: 50%;
+    transform: translateX(-50%) scale(0.6);
+    z-index: 20;
+    opacity: 0;
+    transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    text-align: center;
+  }
+  #logo-reveal.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  #logo-reveal img {
+    width: 100px;
+    height: auto;
+    filter: drop-shadow(0 0 30px rgba(220,38,38,0.5));
+  }
+  #logo-reveal .tagline {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.8s ease 0.4s;
+  }
+  #logo-reveal.show .tagline {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Scroll indicator */
+  #scroll-hint {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  #scroll-hint.hide { opacity: 0; }
+  #scroll-hint .mouse {
+    width: 20px;
+    height: 32px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    position: relative;
+  }
+  #scroll-hint .mouse::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 6px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 2px;
+    animation: scrollWheel 1.8s ease-in-out infinite;
+  }
+  @keyframes scrollWheel {
+    0% { top: 6px; opacity: 1; }
+    100% { top: 18px; opacity: 0; }
+  }
+  #scroll-hint .label {
+    color: rgba(255,255,255,0.35);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* Frame counter / debug (hidden in production) */
+  #frame-info {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 50;
+    color: rgba(255,255,255,0.25);
+    font-size: 11px;
+    font-family: monospace;
+    pointer-events: none;
+    display: none;
+  }
+
+  /* Progress line */
+  #progress-line {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+    z-index: 40;
+    width: 0%;
+    box-shadow: 0 0 10px rgba(220,38,38,0.5);
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div id="preloader">
+  <div class="logo-wrap">
+    <img src="assets/logo.png" alt="Astra United" id="preload-logo">
+  </div>
+  <div class="bar"><div class="bar-fill" id="preload-bar"></div></div>
+  <div class="pct" id="preload-pct">Loading Experience</div>
+</div>
+
+<div id="progress-line"></div>
+
+<div id="viewport">
+  <canvas id="canvas"></canvas>
+</div>
+
+<div class="vignette"></div>
+<div class="grain"></div>
+<div class="color-grade"></div>
+<div class="flare" id="flare"></div>
+
+<div id="logo-reveal">
+  <img src="assets/logo.png" alt="Astra United">
+  <div class="tagline">The Breakaway</div>
+</div>
+
+<div id="scroll-hint">
+  <div class="mouse"></div>
+  <div class="label">Scroll</div>
+</div>
+
+<div id="frame-info"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // =========================================================
+  //  CONFIGURATION
+  // =========================================================
+  const CONFIG = {
+    totalFrames: 15,
+    framePrefix: 'frames/frame_',
+    frameExt: '.png',
+    preloadBatchSize: 4,
+    lerpFactor: 0.12,
+    touchSensitivity: 2.5,
+    enableParticles: true,
+    particleCount: 40,
+    logoRevealStart: 0.85, // percentage of scroll
+    flareStart: 0.75
+  };
+
+  // =========================================================
+  //  STATE
+  // =========================================================
+  const state = {
+    frames: [],
+    loaded: 0,
+    currentFrame: 0,
+    targetFrame: 0,
+    scrollProgress: 0,
+    isTouch: false,
+    touchY: 0,
+    logoRevealed: false,
+    width: window.innerWidth,
+    height: window.innerHeight
+  };
+
+  // =========================================================
+  //  DOM REFERENCES
+  // =========================================================
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const preloader = document.getElementById('preloader');
+  const preloadBar = document.getElementById('preload-bar');
+  const preloadPct = document.getElementById('preload-pct');
+  const progressLine = document.getElementById('progress-line');
+  const logoReveal = document.getElementById('logo-reveal');
+  const flare = document.getElementById('flare');
+  const scrollHint = document.getElementById('scroll-hint');
+
+  // =========================================================
+  //  RESIZE HANDLER
+  // =========================================================
+  function resize() {
+    state.width = window.innerWidth;
+    state.height = window.innerHeight;
+    canvas.width = state.width * window.devicePixelRatio;
+    canvas.height = state.height * window.devicePixelRatio;
+    canvas.style.width = state.width + 'px';
+    canvas.style.height = state.height + 'px';
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // =========================================================
+  //  FRAME PRELOADING
+  // =========================================================
+  function loadFrame(index) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const num = String(index + 1).padStart(3, '0');
+      img.src = CONFIG.framePrefix + num + CONFIG.frameExt;
+      img.onload = () => {
+        state.frames[index] = img;
+        state.loaded++;
+        const pct = Math.round((state.loaded / CONFIG.totalFrames) * 100);
+        preloadBar.style.width = pct + '%';
+        preloadPct.textContent = 'Loading Experience — ' + pct + '%';
+        resolve(img);
+      };
+      img.onerror = () => {
+        // If frame missing, resolve with null and continue
+        state.loaded++;
+        resolve(null);
+      };
+    });
+  }
+
+  async function preloadAll() {
+    const promises = [];
+    for (let i = 0; i < CONFIG.totalFrames; i++) {
+      promises.push(loadFrame(i));
+    }
+    await Promise.all(promises);
+    setTimeout(() => {
+      preloader.classList.add('hidden');
+      startLoop();
+    }, 600);
+  }
+
+  // =========================================================
+  //  SCROLL HANDLING
+  // =========================================================
+  function handleScroll() {
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    state.scrollProgress = docHeight > 0 ? Math.min(Math.max(scrollTop / docHeight, 0), 1) : 0;
+    state.targetFrame = state.scrollProgress * (CONFIG.totalFrames - 1);
+    progressLine.style.width = (state.scrollProgress * 100) + '%';
+
+    if (state.scrollProgress > 0.05) {
+      scrollHint.classList.add('hide');
+    }
+
+    if (state.scrollProgress >= CONFIG.logoRevealStart && !state.logoRevealed) {
+      logoReveal.classList.add('show');
+      state.logoRevealed = true;
+    } else if (state.scrollProgress < CONFIG.logoRevealStart && state.logoRevealed) {
+      logoReveal.classList.remove('show');
+      state.logoRevealed = false;
+    }
+
+    if (state.scrollProgress >= CONFIG.flareStart) {
+      flare.classList.add('active');
+    } else {
+      flare.classList.remove('active');
+    }
+  }
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  // Touch handling for mobile
+  let touchStartY = 0;
+  let touchScroll = 0;
+  window.addEventListener('touchstart', e => {
+    state.isTouch = true;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    const delta = (touchStartY - e.touches[0].clientY) * CONFIG.touchSensitivity;
+    touchStartY = e.touches[0].clientY;
+    window.scrollBy(0, delta);
+  }, { passive: true });
+
+  // =========================================================
+  //  PARTICLE SYSTEM
+  // =========================================================
+  const particles = [];
+  function initParticles() {
+    for (let i = 0; i < CONFIG.particleCount; i++) {
+      particles.push({
+        x: Math.random() * state.width,
+        y: Math.random() * state.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3 - 0.1,
+        size: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.4 + 0.1,
+        life: Math.random()
+      });
+    }
+  }
+  if (CONFIG.enableParticles) initParticles();
+
+  function drawParticles() {
+    if (!CONFIG.enableParticles) return;
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.003;
+      if (p.life <= 0 || p.y < -10 || p.x < -10 || p.x > state.width + 10) {
+        p.x = Math.random() * state.width;
+        p.y = state.height + 10;
+        p.life = 1;
+        p.alpha = Math.random() * 0.4 + 0.1;
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * p.life})`;
+      ctx.fill();
+    }
+  }
+
+  // =========================================================
+  //  RENDER LOOP
+  // =========================================================
+  function render() {
+    // Smooth frame interpolation
+    state.currentFrame += (state.targetFrame - state.currentFrame) * CONFIG.lerpFactor;
+    const frameIndex = Math.floor(state.currentFrame);
+    const nextIndex = Math.min(frameIndex + 1, CONFIG.totalFrames - 1);
+    const blend = state.currentFrame - frameIndex;
+
+    ctx.clearRect(0, 0, state.width, state.height);
+
+    // Draw current frame
+    const currentImg = state.frames[frameIndex];
+    const nextImg = state.frames[nextIndex];
+
+    if (currentImg) {
+      drawCoverImage(currentImg, 1 - blend);
+    }
+    if (nextImg && blend > 0.01) {
+      ctx.globalAlpha = blend;
+      drawCoverImage(nextImg, 1);
+      ctx.globalAlpha = 1;
+    }
+
+    // Particles overlay
+    drawParticles();
+  }
+
+  function drawCoverImage(img, alpha) {
+    ctx.globalAlpha = alpha;
+    const imgRatio = img.width / img.height;
+    const canvasRatio = state.width / state.height;
+    let drawW, drawH, drawX, drawY;
+    if (canvasRatio > imgRatio) {
+      drawW = state.width;
+      drawH = state.width / imgRatio;
+      drawX = 0;
+      drawY = (state.height - drawH) / 2;
+    } else {
+      drawH = state.height;
+      drawW = state.height * imgRatio;
+      drawX = (state.width - drawW) / 2;
+      drawY = 0;
+    }
+    // Subtle parallax zoom based on scroll
+    const zoom = 1 + state.scrollProgress * 0.05;
+    const cx = drawX + drawW / 2;
+    const cy = drawY + drawH / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-cx, -cy);
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function loop() {
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  function startLoop() {
+    handleScroll();
+    loop();
+  }
+
+  // =========================================================
+  //  SET SCROLL HEIGHT FOR SCROLL ANIMATION
+  // =========================================================
+  function setScrollHeight() {
+    // Create a tall body so there's scrollable content
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.height = '600vh';
+    scrollContainer.style.position = 'absolute';
+    scrollContainer.style.top = '0';
+    scrollContainer.style.left = '0';
+    scrollContainer.style.width = '1px';
+    scrollContainer.style.zIndex = '-1';
+    document.body.appendChild(scrollContainer);
+  }
+  setScrollHeight();
+
+  // =========================================================
+  //  INIT
+  // =========================================================
+  preloadAll();
+
+})();
+</script>
+</body>
+</html>

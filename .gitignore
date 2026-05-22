@@ -1,0 +1,19 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+
+# Test / temp files
+test_*.png
+test_*.mp4
+bg_stadium.png
+agent_output.png
+agent_video.mp4
+
+# Source frames (keep processed frames/ only)
+frames_v2/
+
+# IDE
+.vscode/
+.idea/
