@@ -442,7 +442,7 @@
 
       <div class="brand">
         <div class="identity">
-          <img src="assets/logo.png" alt="Astra United">
+          <img src="assets/logo.png" alt="Astra United" data-astra-logo>
           <div>
             <strong>Astra United</strong>
             <span>Football Academy</span>
@@ -461,7 +461,7 @@
 
       <div class="loading" id="loading">
         <div class="loading-inner">
-          <img src="assets/logo.png" alt="">
+          <img src="assets/logo.png" alt="" data-astra-logo>
           <div class="load-bar"><span id="load-bar"></span></div>
         </div>
       </div>
@@ -474,6 +474,10 @@
 
   var CONFIG = {
     totalFrames: 20,
+    logoUrl: "assets/logo.png",
+    // For Wix-only installs, paste the 20 Wix Media Manager frame URLs here.
+    // When this array is empty, the local framePrefix/frameExt naming is used.
+    frameUrls: [],
     framePrefix: "frames_story_web/frame_",
     frameExt: ".webp",
     lerp: 0.105,
@@ -481,6 +485,9 @@
     impactWidth: 0.105,
     finishAt: 0.86
   };
+  if (CONFIG.frameUrls.length) {
+    CONFIG.totalFrames = CONFIG.frameUrls.length;
+  }
 
   var root = document.documentElement;
   var page = document.querySelector("[data-motion-page]");
@@ -548,6 +555,7 @@
   }
 
   function frameUrl(index) {
+    if (CONFIG.frameUrls[index]) return CONFIG.frameUrls[index];
     return CONFIG.framePrefix + String(index + 1).padStart(3, "0") + CONFIG.frameExt;
   }
 
@@ -767,6 +775,9 @@
   });
 
   resize();
+  Array.prototype.forEach.call(document.querySelectorAll("[data-astra-logo]"), function (img) {
+    img.src = CONFIG.logoUrl;
+  });
   preload();
   setTimeout(function () {
     if (!started) updateTarget();

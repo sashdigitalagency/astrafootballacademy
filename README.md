@@ -88,6 +88,8 @@ http://127.0.0.1:5174/astrascroll.html
 
 ## Wix Integration
 
+For the client site, use the Wix-only workflow in `WIX-ONLY-INSTALLATION.md`.
+
 1. Upload `astrascroll.html` into a Wix HTML embed, or paste its code into a Wix embed block.
 2. Upload `assets/logo.png` and all files in `frames_story_web/` to Wix Media Manager.
 3. Replace the local paths in `astrascroll.html` with the Wix-hosted asset URLs:
