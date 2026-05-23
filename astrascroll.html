@@ -1,539 +1,776 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Astra United — The Breakaway</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Astra United Motion</title>
+<script>
+  (function () {
+    try {
+      document.documentElement.classList.add(window.top === window.self ? "standalone" : "embedded");
+    } catch (error) {
+      document.documentElement.classList.add("embedded");
+    }
+  })();
+</script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
+  :root {
+    color-scheme: dark;
+    --p: 0;
+    --impact: 0;
+    --finish: 0;
+    --red: #df2637;
+    --navy: #061326;
+    --ink: #020711;
+    --white: #f7fbff;
+    --muted: rgba(247, 251, 255, 0.68);
+    --copy-opacity: 0.96;
+    --copy-y: 0px;
+    --badge-y: 0px;
+    --cue-opacity: 0.72;
+    --progress-opacity: 0.84;
+    --flare-opacity: 0;
+    --flare-scale: 0.4;
+    --shake-x: 0px;
+    --shake-y: 0px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: var(--ink);
+    color: var(--white);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    overflow-x: clip;
+  }
+
+  html.embedded,
+  html.embedded body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #0a0e17;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  #preloader {
-    position: fixed;
-    inset: 0;
-    background: #0a0e17;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
-  }
-  #preloader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-  #preloader .logo-wrap {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 30px;
-    position: relative;
-    animation: pulseLogo 2s ease-in-out infinite;
-  }
-  #preloader .logo-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.4));
-  }
-  @keyframes pulseLogo {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-  }
-  #preloader .bar {
-    width: 260px;
-    height: 3px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 3px;
-    overflow: hidden;
-    position: relative;
-  }
-  #preloader .bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #dc2626, #b91c1c);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    box-shadow: 0 0 12px rgba(220,38,38,0.6);
-  }
-  #preloader .pct {
-    color: rgba(255,255,255,0.5);
-    font-size: 12px;
-    margin-top: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
   }
 
-  #viewport {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-  }
-  #canvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  body {
+    min-height: 100vh;
   }
 
-  /* Cinematic overlays */
-  .vignette {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
-  }
-  .grain {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 11;
-    opacity: 0.06;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  }
-  .color-grade {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 12;
-    background: linear-gradient(180deg, rgba(10,14,23,0.3) 0%, transparent 40%, transparent 60%, rgba(10,14,23,0.4) 100%);
-  }
-  .flare {
-    position: fixed;
-    top: -10%;
-    right: -10%;
-    width: 60vw;
-    height: 60vw;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 9;
-    mix-blend-mode: screen;
-    opacity: 0;
-    transition: opacity 1s ease;
-  }
-  .flare.active { opacity: 1; }
-
-  /* Logo reveal */
-  #logo-reveal {
-    position: fixed;
-    bottom: 8vh;
-    left: 50%;
-    transform: translateX(-50%) scale(0.6);
-    z-index: 20;
-    opacity: 0;
-    transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-    pointer-events: none;
-    text-align: center;
-  }
-  #logo-reveal.show {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-  #logo-reveal img {
-    width: 100px;
-    height: auto;
-    filter: drop-shadow(0 0 30px rgba(220,38,38,0.5));
-  }
-  #logo-reveal .tagline {
-    color: rgba(255,255,255,0.7);
-    font-size: 11px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-top: 10px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.8s ease 0.4s;
-  }
-  #logo-reveal.show .tagline {
-    opacity: 1;
-    transform: translateY(0);
+  .motion-page {
+    min-height: 760vh;
+    background: var(--ink);
   }
 
-  /* Scroll indicator */
-  #scroll-hint {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    opacity: 1;
-    transition: opacity 0.6s ease;
-    pointer-events: none;
-  }
-  #scroll-hint.hide { opacity: 0; }
-  #scroll-hint .mouse {
-    width: 20px;
-    height: 32px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 12px;
-    position: relative;
-  }
-  #scroll-hint .mouse::after {
-    content: '';
-    position: absolute;
-    top: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 6px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 2px;
-    animation: scrollWheel 1.8s ease-in-out infinite;
-  }
-  @keyframes scrollWheel {
-    0% { top: 6px; opacity: 1; }
-    100% { top: 18px; opacity: 0; }
-  }
-  #scroll-hint .label {
-    color: rgba(255,255,255,0.35);
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 8px;
+  html.embedded .motion-page {
+    min-height: 100%;
   }
 
-  /* Frame counter / debug (hidden in production) */
-  #frame-info {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 50;
-    color: rgba(255,255,255,0.25);
-    font-size: 11px;
-    font-family: monospace;
-    pointer-events: none;
-    display: none;
-  }
-
-  /* Progress line */
-  #progress-line {
-    position: fixed;
+  .hero {
+    position: sticky;
     top: 0;
-    left: 0;
+    height: 100vh;
+    min-height: 640px;
+    overflow: hidden;
+    isolation: isolate;
+    background: radial-gradient(circle at 50% 32%, #10203b 0%, #020711 68%);
+  }
+
+  html.embedded .hero {
+    position: relative;
+    height: 100%;
+    min-height: 520px;
+  }
+
+  #stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    transform: translate3d(var(--shake-x), var(--shake-y), 0);
+    will-change: transform;
+  }
+
+  .grade,
+  .grain,
+  .vignette,
+  .speed,
+  .flare,
+  .brand,
+  .progress,
+  .scroll-cue,
+  .loading {
+    position: absolute;
+  }
+
+  .grade {
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(2, 7, 17, 0.82), rgba(2, 7, 17, 0.18) 28%, rgba(2, 7, 17, 0.05) 62%, rgba(2, 7, 17, 0.58)),
+      radial-gradient(circle at 55% 36%, rgba(255, 255, 255, calc(var(--impact) * 0.24)), transparent 22%),
+      radial-gradient(circle at 52% 34%, rgba(223, 38, 55, calc(var(--impact) * 0.22)), transparent 28%);
+    mix-blend-mode: screen;
+  }
+
+  .grain {
+    inset: 0;
+    z-index: 3;
+    opacity: 0.055;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .vignette {
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 52% 37%, transparent 0 45%, rgba(0, 0, 0, 0.68) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 38%, rgba(0, 0, 0, 0.5));
+  }
+
+  .speed {
+    inset: -8%;
+    z-index: 4;
+    opacity: calc(0.06 + var(--impact) * 0.42);
+    pointer-events: none;
+    transform: translate3d(calc((0.5 - var(--p)) * 10vw), 0, 0) rotate(-3deg);
+    filter: blur(0.8px);
+    mix-blend-mode: screen;
+    background:
+      linear-gradient(100deg, transparent 16%, rgba(255, 255, 255, 0.16) 17%, transparent 21%),
+      linear-gradient(86deg, transparent 42%, rgba(223, 38, 55, 0.18) 43%, transparent 48%),
+      linear-gradient(105deg, transparent 72%, rgba(255, 255, 255, 0.12) 73%, transparent 77%);
+  }
+
+  .flare {
+    left: 50%;
+    top: 25%;
+    z-index: 5;
+    width: min(36vw, 560px);
+    min-width: 240px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: var(--flare-opacity);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(var(--flare-scale));
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      0 0 34px rgba(255, 255, 255, 0.28),
+      0 0 100px rgba(223, 38, 55, 0.22),
+      inset 0 0 30px rgba(255, 255, 255, 0.18);
+    mix-blend-mode: screen;
+  }
+
+  .flare::after {
+    content: "";
+    position: absolute;
+    inset: 49.2%;
+    border-radius: 50%;
+    opacity: 0.28;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.72);
+  }
+
+  .brand {
+    inset: 0;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 56px 46px;
+    pointer-events: none;
+  }
+
+  .identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: fit-content;
+    transform: translate3d(0, var(--badge-y), 0);
+    filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.55));
+  }
+
+  .identity img {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+  }
+
+  .identity strong,
+  .identity span,
+  .copy h1,
+  .copy p,
+  .meta {
+    text-shadow: 0 18px 42px rgba(0, 0, 0, 0.62);
+  }
+
+  .identity strong {
+    display: block;
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .identity span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .copy {
+    width: min(640px, 52vw);
+    opacity: var(--copy-opacity);
+    transform: translate3d(0, var(--copy-y), 0);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: rgba(247, 251, 255, 0.74);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .meta::before {
+    content: "";
+    width: 38px;
     height: 2px;
-    background: linear-gradient(90deg, #dc2626, #b91c1c);
-    z-index: 40;
-    width: 0%;
-    box-shadow: 0 0 10px rgba(220,38,38,0.5);
-    transition: width 0.1s linear;
+    background: var(--red);
+    box-shadow: 0 0 16px rgba(223, 38, 55, 0.8);
+  }
+
+  .copy h1 {
+    margin: 0;
+    max-width: 610px;
+    font-size: clamp(48px, 7.2vw, 92px);
+    line-height: 0.88;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .copy p {
+    margin: 20px 0 0;
+    max-width: 470px;
+    color: rgba(247, 251, 255, 0.76);
+    font-size: clamp(16px, 1.25vw, 19px);
+    line-height: 1.45;
+  }
+
+  .progress {
+    right: 46px;
+    bottom: 44px;
+    z-index: 10;
+    width: min(18vw, 170px);
+    min-width: 116px;
+    height: 2px;
+    overflow: hidden;
+    opacity: var(--progress-opacity);
+    background: rgba(255, 255, 255, 0.24);
+  }
+
+  .progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--red), #fff);
+    transform: scaleX(var(--p));
+    transform-origin: left center;
+  }
+
+  .scroll-cue {
+    left: 50%;
+    bottom: 26px;
+    z-index: 11;
+    width: 28px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    border-radius: 999px;
+    opacity: var(--cue-opacity);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .scroll-cue::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    width: 4px;
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    transform: translateX(-50%);
+    animation: cue 1.45s ease-in-out infinite;
+  }
+
+  .loading {
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    background: #020711;
+    transition: opacity 0.55s ease, visibility 0.55s ease;
+  }
+
+  .loading.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .loading-inner {
+    display: grid;
+    justify-items: center;
+    gap: 22px;
+  }
+
+  .loading-inner img {
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 24px rgba(223, 38, 55, 0.42));
+  }
+
+  .load-bar {
+    width: min(280px, 62vw);
+    height: 2px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .load-bar span {
+    display: block;
+    height: 100%;
+    width: calc(var(--loaded, 0) * 1%);
+    background: linear-gradient(90deg, var(--red), #fff);
+    box-shadow: 0 0 18px rgba(223, 38, 55, 0.65);
+  }
+
+  @keyframes cue {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 0);
+    }
+    35%,
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, 13px);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      min-height: 680px;
+    }
+
+    html.embedded .hero {
+      min-height: 100%;
+    }
+
+    .brand {
+      padding: 24px 18px 30px;
+    }
+
+    .identity img {
+      width: 48px;
+      height: 48px;
+    }
+
+    .identity strong {
+      font-size: 16px;
+    }
+
+    .identity span {
+      font-size: 10px;
+    }
+
+    .copy {
+      width: 92vw;
+    }
+
+    .copy h1 {
+      font-size: clamp(40px, 13vw, 58px);
+    }
+
+    .copy p {
+      max-width: 340px;
+    }
+
+    .progress {
+      right: 18px;
+      bottom: 32px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-cue::after {
+      animation: none;
+    }
   }
 </style>
 </head>
 <body>
+  <main class="motion-page" data-motion-page>
+    <section class="hero" aria-label="Astra United Football Academy cinematic scroll motion">
+      <canvas id="stage"></canvas>
+      <div class="grade" aria-hidden="true"></div>
+      <div class="speed" aria-hidden="true"></div>
+      <div class="flare" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
 
-<div id="preloader">
-  <div class="logo-wrap">
-    <img src="assets/logo.png" alt="Astra United" id="preload-logo">
-  </div>
-  <div class="bar"><div class="bar-fill" id="preload-bar"></div></div>
-  <div class="pct" id="preload-pct">Loading Experience</div>
-</div>
+      <div class="brand">
+        <div class="identity">
+          <img src="assets/logo.png" alt="Astra United">
+          <div>
+            <strong>Astra United</strong>
+            <span>Football Academy</span>
+          </div>
+        </div>
 
-<div id="progress-line"></div>
+        <div class="copy">
+          <div class="meta">Elite Training</div>
+          <h1>Own The Moment</h1>
+          <p>Match-day intensity, technical confidence, and academy discipline built under the lights.</p>
+        </div>
+      </div>
 
-<div id="viewport">
-  <canvas id="canvas"></canvas>
-</div>
+      <div class="progress" aria-hidden="true"></div>
+      <div class="scroll-cue" aria-hidden="true"></div>
 
-<div class="vignette"></div>
-<div class="grain"></div>
-<div class="color-grade"></div>
-<div class="flare" id="flare"></div>
-
-<div id="logo-reveal">
-  <img src="assets/logo.png" alt="Astra United">
-  <div class="tagline">The Breakaway</div>
-</div>
-
-<div id="scroll-hint">
-  <div class="mouse"></div>
-  <div class="label">Scroll</div>
-</div>
-
-<div id="frame-info"></div>
+      <div class="loading" id="loading">
+        <div class="loading-inner">
+          <img src="assets/logo.png" alt="">
+          <div class="load-bar"><span id="load-bar"></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
 <script>
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
-  // =========================================================
-  //  CONFIGURATION
-  // =========================================================
-  const CONFIG = {
-    totalFrames: 15,
-    framePrefix: 'frames/frame_',
-    frameExt: '.png',
-    preloadBatchSize: 4,
-    lerpFactor: 0.12,
-    touchSensitivity: 2.5,
-    enableParticles: true,
-    particleCount: 40,
-    logoRevealStart: 0.85, // percentage of scroll
-    flareStart: 0.75
+  var CONFIG = {
+    totalFrames: 20,
+    framePrefix: "frames_story_web/frame_",
+    frameExt: ".webp",
+    lerp: 0.105,
+    impactAt: 0.53,
+    impactWidth: 0.105,
+    finishAt: 0.86
   };
 
-  // =========================================================
-  //  STATE
-  // =========================================================
-  const state = {
-    frames: [],
-    loaded: 0,
-    currentFrame: 0,
-    targetFrame: 0,
-    scrollProgress: 0,
-    isTouch: false,
-    touchY: 0,
-    logoRevealed: false,
-    width: window.innerWidth,
-    height: window.innerHeight
-  };
+  var root = document.documentElement;
+  var page = document.querySelector("[data-motion-page]");
+  var canvas = document.getElementById("stage");
+  var ctx = canvas.getContext("2d", { alpha: false });
+  var loading = document.getElementById("loading");
+  var loadBar = document.getElementById("load-bar");
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var embedded = root.classList.contains("embedded");
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var width = 0;
+  var height = 0;
+  var frames = [];
+  var loaded = 0;
+  var progress = 0;
+  var targetProgress = 0;
+  var externalProgress = null;
+  var externalUntil = 0;
+  var manualProgress = 0;
+  var manualUntil = 0;
+  var touchY = null;
+  var started = false;
 
-  // =========================================================
-  //  DOM REFERENCES
-  // =========================================================
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const preloader = document.getElementById('preloader');
-  const preloadBar = document.getElementById('preload-bar');
-  const preloadPct = document.getElementById('preload-pct');
-  const progressLine = document.getElementById('progress-line');
-  const logoReveal = document.getElementById('logo-reveal');
-  const flare = document.getElementById('flare');
-  const scrollHint = document.getElementById('scroll-hint');
+  var dust = Array.from({ length: 64 }, function (_, index) {
+    return {
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.6 + Math.random() * 2.4,
+      vx: (Math.random() - 0.5) * 0.0018,
+      vy: -0.0008 - Math.random() * 0.0014,
+      a: 0.08 + Math.random() * 0.18,
+      phase: index * 0.31
+    };
+  });
 
-  // =========================================================
-  //  RESIZE HANDLER
-  // =========================================================
-  function resize() {
-    state.width = window.innerWidth;
-    state.height = window.innerHeight;
-    canvas.width = state.width * window.devicePixelRatio;
-    canvas.height = state.height * window.devicePixelRatio;
-    canvas.style.width = state.width + 'px';
-    canvas.style.height = state.height + 'px';
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
   }
-  window.addEventListener('resize', resize);
-  resize();
 
-  // =========================================================
-  //  FRAME PRELOADING
-  // =========================================================
+  function now() {
+    return window.performance && performance.now ? performance.now() : Date.now();
+  }
+
+  function easeInOut(value) {
+    return value < 0.5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2;
+  }
+
+  function smoothstep(value) {
+    value = clamp(value, 0, 1);
+    return value * value * (3 - 2 * value);
+  }
+
+  function gaussian(value, center, widthValue) {
+    return Math.exp(-Math.pow((value - center) / widthValue, 2));
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function frameUrl(index) {
+    return CONFIG.framePrefix + String(index + 1).padStart(3, "0") + CONFIG.frameExt;
+  }
+
   function loadFrame(index) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const num = String(index + 1).padStart(3, '0');
-      img.src = CONFIG.framePrefix + num + CONFIG.frameExt;
-      img.onload = () => {
-        state.frames[index] = img;
-        state.loaded++;
-        const pct = Math.round((state.loaded / CONFIG.totalFrames) * 100);
-        preloadBar.style.width = pct + '%';
-        preloadPct.textContent = 'Loading Experience — ' + pct + '%';
-        resolve(img);
+    return new Promise(function (resolve) {
+      var img = new Image();
+      img.decoding = "async";
+      img.onload = function () {
+        frames[index] = img;
+        loaded += 1;
+        root.style.setProperty("--loaded", Math.round((loaded / CONFIG.totalFrames) * 100));
+        resolve();
       };
-      img.onerror = () => {
-        // If frame missing, resolve with null and continue
-        state.loaded++;
-        resolve(null);
+      img.onerror = function () {
+        loaded += 1;
+        resolve();
       };
+      img.src = frameUrl(index);
     });
   }
 
-  async function preloadAll() {
-    const promises = [];
-    for (let i = 0; i < CONFIG.totalFrames; i++) {
-      promises.push(loadFrame(i));
+  function preload() {
+    var queue = [];
+    for (var i = 0; i < CONFIG.totalFrames; i += 1) {
+      queue.push(loadFrame(i));
     }
-    await Promise.all(promises);
-    setTimeout(() => {
-      preloader.classList.add('hidden');
-      startLoop();
-    }, 600);
-  }
-
-  // =========================================================
-  //  SCROLL HANDLING
-  // =========================================================
-  function handleScroll() {
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    state.scrollProgress = docHeight > 0 ? Math.min(Math.max(scrollTop / docHeight, 0), 1) : 0;
-    state.targetFrame = state.scrollProgress * (CONFIG.totalFrames - 1);
-    progressLine.style.width = (state.scrollProgress * 100) + '%';
-
-    if (state.scrollProgress > 0.05) {
-      scrollHint.classList.add('hide');
-    }
-
-    if (state.scrollProgress >= CONFIG.logoRevealStart && !state.logoRevealed) {
-      logoReveal.classList.add('show');
-      state.logoRevealed = true;
-    } else if (state.scrollProgress < CONFIG.logoRevealStart && state.logoRevealed) {
-      logoReveal.classList.remove('show');
-      state.logoRevealed = false;
-    }
-
-    if (state.scrollProgress >= CONFIG.flareStart) {
-      flare.classList.add('active');
-    } else {
-      flare.classList.remove('active');
-    }
-  }
-
-  window.addEventListener('scroll', handleScroll, { passive: true });
-
-  // Touch handling for mobile
-  let touchStartY = 0;
-  let touchScroll = 0;
-  window.addEventListener('touchstart', e => {
-    state.isTouch = true;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-  window.addEventListener('touchmove', e => {
-    const delta = (touchStartY - e.touches[0].clientY) * CONFIG.touchSensitivity;
-    touchStartY = e.touches[0].clientY;
-    window.scrollBy(0, delta);
-  }, { passive: true });
-
-  // =========================================================
-  //  PARTICLE SYSTEM
-  // =========================================================
-  const particles = [];
-  function initParticles() {
-    for (let i = 0; i < CONFIG.particleCount; i++) {
-      particles.push({
-        x: Math.random() * state.width,
-        y: Math.random() * state.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3 - 0.1,
-        size: Math.random() * 2 + 0.5,
-        alpha: Math.random() * 0.4 + 0.1,
-        life: Math.random()
-      });
-    }
-  }
-  if (CONFIG.enableParticles) initParticles();
-
-  function drawParticles() {
-    if (!CONFIG.enableParticles) return;
-    for (const p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= 0.003;
-      if (p.life <= 0 || p.y < -10 || p.x < -10 || p.x > state.width + 10) {
-        p.x = Math.random() * state.width;
-        p.y = state.height + 10;
-        p.life = 1;
-        p.alpha = Math.random() * 0.4 + 0.1;
+    Promise.all(queue).then(function () {
+      loading.classList.add("is-hidden");
+      started = true;
+      updateTarget();
+      requestAnimationFrame(loop);
+      try {
+        window.parent.postMessage({ type: "astra-motion-ready" }, "*");
+      } catch (error) {
+        // Optional parent handshake for Wix.
       }
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * p.life})`;
-      ctx.fill();
-    }
+    });
   }
 
-  // =========================================================
-  //  RENDER LOOP
-  // =========================================================
-  function render() {
-    // Smooth frame interpolation
-    state.currentFrame += (state.targetFrame - state.currentFrame) * CONFIG.lerpFactor;
-    const frameIndex = Math.floor(state.currentFrame);
-    const nextIndex = Math.min(frameIndex + 1, CONFIG.totalFrames - 1);
-    const blend = state.currentFrame - frameIndex;
-
-    ctx.clearRect(0, 0, state.width, state.height);
-
-    // Draw current frame
-    const currentImg = state.frames[frameIndex];
-    const nextImg = state.frames[nextIndex];
-
-    if (currentImg) {
-      drawCoverImage(currentImg, 1 - blend);
-    }
-    if (nextImg && blend > 0.01) {
-      ctx.globalAlpha = blend;
-      drawCoverImage(nextImg, 1);
-      ctx.globalAlpha = 1;
-    }
-
-    // Particles overlay
-    drawParticles();
+  function standaloneProgress() {
+    if (embedded) return null;
+    var max = page.offsetHeight - window.innerHeight;
+    if (max <= 16) return null;
+    var rect = page.getBoundingClientRect();
+    return clamp(-rect.top / max, 0, 1);
   }
 
-  function drawCoverImage(img, alpha) {
-    ctx.globalAlpha = alpha;
-    const imgRatio = img.width / img.height;
-    const canvasRatio = state.width / state.height;
-    let drawW, drawH, drawX, drawY;
-    if (canvasRatio > imgRatio) {
-      drawW = state.width;
-      drawH = state.width / imgRatio;
-      drawX = 0;
-      drawY = (state.height - drawH) / 2;
-    } else {
-      drawH = state.height;
-      drawW = state.height * imgRatio;
-      drawX = (state.width - drawW) / 2;
+  function addManualDelta(delta) {
+    manualProgress = clamp(manualProgress + delta, 0, 1);
+    manualUntil = now() + 1600;
+  }
+
+  function resolveProgress() {
+    var current = now();
+    var scrolled = standaloneProgress();
+    if (reduced) return CONFIG.impactAt;
+    if (externalProgress !== null && current < externalUntil) return externalProgress;
+    if (scrolled !== null) return scrolled;
+    if (current < manualUntil) return manualProgress;
+    return manualProgress;
+  }
+
+  function updateTarget() {
+    targetProgress = resolveProgress();
+  }
+
+  function applyCss(p, time) {
+    var impact = gaussian(p, CONFIG.impactAt, CONFIG.impactWidth);
+    var finish = smoothstep((p - CONFIG.finishAt) / (1 - CONFIG.finishAt));
+    var actionFade = smoothstep((p - 0.12) / 0.28);
+    var shake = impact * 6.5;
+    root.style.setProperty("--p", p.toFixed(4));
+    root.style.setProperty("--impact", impact.toFixed(4));
+    root.style.setProperty("--finish", finish.toFixed(4));
+    root.style.setProperty("--copy-opacity", clamp(0.96 - actionFade * 0.9 + finish * 0.1, 0, 1).toFixed(4));
+    root.style.setProperty("--copy-y", (p * 14 + actionFade * 24 - impact * 10).toFixed(3) + "px");
+    root.style.setProperty("--badge-y", (-p * 18).toFixed(3) + "px");
+    root.style.setProperty("--cue-opacity", clamp(0.72 - p * 0.8, 0, 1).toFixed(4));
+    root.style.setProperty("--progress-opacity", clamp(0.84 - finish * 0.25, 0, 1).toFixed(4));
+    root.style.setProperty("--flare-opacity", (impact * 0.46).toFixed(4));
+    root.style.setProperty("--flare-scale", (0.42 + impact * 1.15).toFixed(4));
+    root.style.setProperty("--shake-x", (Math.sin(time * 0.045) * shake).toFixed(3) + "px");
+    root.style.setProperty("--shake-y", (Math.cos(time * 0.052) * shake * 0.62).toFixed(3) + "px");
+  }
+
+  function drawCover(img, alpha, p, impact, blendOffset) {
+    if (!img) return;
+    var imgRatio = img.naturalWidth / img.naturalHeight;
+    var viewRatio = width / height;
+    var drawW = width;
+    var drawH = width / imgRatio;
+    var drawX = 0;
+    var drawY = (height - drawH) / 2;
+    if (viewRatio < imgRatio) {
+      drawH = height;
+      drawW = height * imgRatio;
+      drawX = (width - drawW) / 2;
       drawY = 0;
     }
-    // Subtle parallax zoom based on scroll
-    const zoom = 1 + state.scrollProgress * 0.05;
-    const cx = drawX + drawW / 2;
-    const cy = drawY + drawH / 2;
+
+    var zoom = 1.015 + p * 0.07 + impact * 0.028;
+    var panX = (0.5 - p) * width * 0.026 + blendOffset * 4;
+    var panY = (0.5 - p) * height * 0.014 - impact * height * 0.01;
+    if (width / height < 0.82) {
+      panX -= impact * width * 0.42;
+      panY -= impact * height * 0.025;
+    }
     ctx.save();
-    ctx.translate(cx, cy);
+    ctx.globalAlpha = alpha;
+    ctx.translate(width / 2 + panX, height / 2 + panY);
     ctx.scale(zoom, zoom);
-    ctx.translate(-cx, -cy);
+    ctx.translate(-width / 2, -height / 2);
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
     ctx.restore();
     ctx.globalAlpha = 1;
   }
 
-  function loop() {
-    render();
+  function drawDust(p, impact, time) {
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    dust.forEach(function (particle) {
+      particle.x += particle.vx * (1 + impact * 7);
+      particle.y += particle.vy * (1 + impact * 4);
+      if (particle.x < -0.06 || particle.x > 1.06 || particle.y < -0.08) {
+        particle.x = Math.random();
+        particle.y = 0.72 + Math.random() * 0.28;
+      }
+      var shimmer = 0.65 + Math.sin(time * 0.0018 + particle.phase) * 0.35;
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(235, 216, 154, " + (particle.a * shimmer * (0.7 + impact * 1.8)).toFixed(3) + ")";
+      ctx.arc(particle.x * width, particle.y * height, particle.r * (1 + impact * 1.8), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function render(time) {
+    progress += (targetProgress - progress) * CONFIG.lerp;
+    var p = reduced ? CONFIG.impactAt : clamp(progress, 0, 1);
+    var story = easeInOut(p);
+    var exact = story * (CONFIG.totalFrames - 1);
+    var actionFrames = p > 0.18 && p < 0.82;
+    var index = actionFrames ? Math.round(exact) : Math.floor(exact);
+    var next = actionFrames ? index : Math.min(index + 1, CONFIG.totalFrames - 1);
+    var blend = actionFrames ? 0 : smoothstep(exact - index);
+    var impact = gaussian(p, CONFIG.impactAt, CONFIG.impactWidth);
+
+    ctx.fillStyle = "#020711";
+    ctx.fillRect(0, 0, width, height);
+    drawCover(frames[index], 1, p, impact, 0);
+    if (next !== index && blend > 0.01) {
+      drawCover(frames[next], blend, p, impact, 1);
+    }
+
+    var flash = impact * 0.08;
+    if (flash > 0.002) {
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillStyle = "rgba(255, 255, 255, " + flash.toFixed(4) + ")";
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+    }
+
+    drawDust(p, impact, time);
+    applyCss(p, time);
+  }
+
+  function loop(time) {
+    updateTarget();
+    render(time);
     requestAnimationFrame(loop);
   }
 
-  function startLoop() {
-    handleScroll();
-    loop();
+  function readExternalMessage(event) {
+    var data = event.data;
+    if (typeof data === "string") {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        return;
+      }
+    }
+    if (!data || data.type !== "astra-scroll-progress") return;
+    var value = Number(data.progress);
+    if (!Number.isFinite(value)) return;
+    externalProgress = clamp(value, 0, 1);
+    externalUntil = now() + 1500;
+    updateTarget();
   }
 
-  // =========================================================
-  //  SET SCROLL HEIGHT FOR SCROLL ANIMATION
-  // =========================================================
-  function setScrollHeight() {
-    // Create a tall body so there's scrollable content
-    const scrollContainer = document.createElement('div');
-    scrollContainer.style.height = '600vh';
-    scrollContainer.style.position = 'absolute';
-    scrollContainer.style.top = '0';
-    scrollContainer.style.left = '0';
-    scrollContainer.style.width = '1px';
-    scrollContainer.style.zIndex = '-1';
-    document.body.appendChild(scrollContainer);
-  }
-  setScrollHeight();
+  window.addEventListener("message", readExternalMessage);
+  window.addEventListener("resize", function () {
+    resize();
+    updateTarget();
+  });
+  window.addEventListener("scroll", updateTarget, { passive: true });
+  window.addEventListener("wheel", function (event) {
+    if (!embedded) return;
+    addManualDelta(event.deltaY * 0.00125);
+    updateTarget();
+  }, { passive: true });
+  window.addEventListener("touchstart", function (event) {
+    if (!embedded || !event.touches.length) return;
+    touchY = event.touches[0].clientY;
+  }, { passive: true });
+  window.addEventListener("touchmove", function (event) {
+    if (!embedded || touchY === null || !event.touches.length) return;
+    var nextY = event.touches[0].clientY;
+    addManualDelta((touchY - nextY) * 0.0032);
+    touchY = nextY;
+    updateTarget();
+  }, { passive: true });
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === " ") addManualDelta(0.08);
+    if (event.key === "ArrowUp" || event.key === "PageUp") addManualDelta(-0.08);
+    updateTarget();
+  });
 
-  // =========================================================
-  //  INIT
-  // =========================================================
-  preloadAll();
-
+  resize();
+  preload();
+  setTimeout(function () {
+    if (!started) updateTarget();
+  }, 250);
 })();
 </script>
 </body>

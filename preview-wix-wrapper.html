@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Astra United Wix Scroll Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 220vh;
+      background: #020711;
+      font-family: Arial, sans-serif;
+    }
+    .hero-wrap {
+      height: 220vh;
+      position: relative;
+      overflow: hidden;
+      background: #020711;
+    }
+    iframe {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      border: 0;
+      display: block;
+    }
+    .after {
+      min-height: 120vh;
+      background: linear-gradient(180deg, #020711, #061326);
+    }
+  </style>
+</head>
+<body>
+  <section class="hero-wrap">
+    <iframe title="Astra United Motion" src="astrascroll.html"></iframe>
+  </section>
+  <section class="after" aria-hidden="true"></section>
+  <script src="wix-scroll-driver.js"></script>
+</body>
+</html>

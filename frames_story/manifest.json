@@ -1,0 +1,150 @@
+{
+  "project": "Astra United story scroll motion",
+  "model": "gemini-2.5-flash-image",
+  "aspect_ratio": "16:9",
+  "frame_count": 20,
+  "duration_seconds": 8,
+  "scenario": "The Breakthrough Strike",
+  "frames": [
+    {
+      "file": "frame_001.png",
+      "beat": "cold open",
+      "camera": "low field-level wide shot, negative space on left",
+      "action": "the ball rests on wet grass under floodlights, the main player approaches from the distance",
+      "ball": "one ball on grass in foreground"
+    },
+    {
+      "file": "frame_002.png",
+      "beat": "first touch",
+      "camera": "low sideline tracking shot",
+      "action": "main Astra player enters frame dribbling calmly from left to right",
+      "ball": "one ball close to his right boot on the ground"
+    },
+    {
+      "file": "frame_003.png",
+      "beat": "pressure arrives",
+      "camera": "medium-wide at waist height",
+      "action": "a defender/training partner closes from the front, main player lowers his shoulder",
+      "ball": "one ball rolling between main player's feet"
+    },
+    {
+      "file": "frame_004.png",
+      "beat": "scan",
+      "camera": "medium close-up, slight dolly push",
+      "action": "main player glances up while shielding the ball with his body",
+      "ball": "one ball partly in foreground at his feet"
+    },
+    {
+      "file": "frame_005.png",
+      "beat": "drag back",
+      "camera": "low dynamic angle near grass",
+      "action": "main player drags the ball back with the sole of his right boot while the defender oversteps safely",
+      "ball": "EXACTLY ONE ball, pinned under the main player's sole on the turf; no ball in the air, no second ball anywhere"
+    },
+    {
+      "file": "frame_006.png",
+      "beat": "cut inside",
+      "camera": "wide low-angle tracking shot",
+      "action": "main player cuts inside past the defender, defender is behind and off balance but still grounded",
+      "ball": "one ball moving with the main player's left foot"
+    },
+    {
+      "file": "frame_007.png",
+      "beat": "separation",
+      "camera": "medium-wide, floodlights behind",
+      "action": "main player has created space, plants his left foot and opens his hips",
+      "ball": "one ball directly in front of him on grass"
+    },
+    {
+      "file": "frame_008.png",
+      "beat": "flick",
+      "camera": "low 50mm sports lens",
+      "action": "main player flicks the ball up with the top of his right boot",
+      "ball": "one ball just leaving the boot at shin height"
+    },
+    {
+      "file": "frame_009.png",
+      "beat": "ball rising",
+      "camera": "medium shot, slight slow-motion feel",
+      "action": "main player watches the ball rise and bends his knees to load the strike",
+      "ball": "one ball at knee-to-waist height, centered"
+    },
+    {
+      "file": "frame_010.png",
+      "beat": "coil",
+      "camera": "cinematic medium-wide",
+      "action": "main player rotates his torso and lifts his right leg for a controlled side-volley",
+      "ball": "one ball at waist height, one meter in front of striking foot"
+    },
+    {
+      "file": "frame_011.png",
+      "beat": "strike",
+      "camera": "hero action frame, low sideline angle",
+      "action": "main player executes a realistic side-volley, right boot contacting the single ball, left leg planted or just leaving turf",
+      "ball": "one ball at boot contact with slight compression"
+    },
+    {
+      "file": "frame_012.png",
+      "beat": "release",
+      "camera": "same direction, stronger motion energy, keep action inside the center 60 percent of the frame",
+      "action": "the ball leaves the boot and travels forward but remains visible near the center-right safe area, player begins to descend",
+      "ball": "EXACTLY ONE ball clearly separated from the boot but not near the frame edge"
+    },
+    {
+      "file": "frame_013.png",
+      "beat": "follow through",
+      "camera": "wide frame, camera continues tracking",
+      "action": "main player's striking leg follows through across his body, arms balancing",
+      "ball": "one ball traveling away through light haze"
+    },
+    {
+      "file": "frame_014.png",
+      "beat": "landing",
+      "camera": "low sideline shot, turf foreground",
+      "action": "main player lands safely and braces with one hand near the grass",
+      "ball": "one ball farther away in the air, smaller"
+    },
+    {
+      "file": "frame_015.png",
+      "beat": "watch the shot",
+      "camera": "medium shot from front three-quarter",
+      "action": "main player rises from the landing and watches the shot's path",
+      "ball": "one ball visible high in the background"
+    },
+    {
+      "file": "frame_016.png",
+      "beat": "ball flight",
+      "camera": "telephoto shot toward goal lights",
+      "action": "the ball arcs through floodlight beams toward the training goal",
+      "ball": "one ball in the upper third, goal blurred behind"
+    },
+    {
+      "file": "frame_017.png",
+      "beat": "goal moment",
+      "camera": "behind-goal low angle, no players inside the goal",
+      "action": "the ball hits the inside side-netting of the small training goal; show the net ripple and the ball only",
+      "ball": "EXACTLY ONE ball in the net, no player, no goalkeeper, no second ball"
+    },
+    {
+      "file": "frame_018.png",
+      "beat": "recovery",
+      "camera": "wide field-level frame",
+      "action": "main player stands, defender behind him, both looking toward the goal",
+      "ball": "one ball settled in or near the goal net in the distance"
+    },
+    {
+      "file": "frame_019.png",
+      "beat": "hero calm",
+      "camera": "medium-wide, negative space for headline",
+      "action": "main player walks back toward camera with controlled confidence",
+      "ball": "one ball carried or resting far behind near goal"
+    },
+    {
+      "file": "frame_020.png",
+      "beat": "end card frame",
+      "camera": "wide cinematic hero composition",
+      "action": "main player stands under floodlights, training goal behind, defender out of focus",
+      "ball": "one ball on grass near player's boot"
+    }
+  ]
+}

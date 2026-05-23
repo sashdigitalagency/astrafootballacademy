@@ -1,6 +1,7 @@
 # Environment
 .env
 venv/
+.venv/
 __pycache__/
 *.pyc
 
@@ -13,6 +14,14 @@ agent_video.mp4
 
 # Source frames (keep processed frames/ only)
 frames_v2/
+frames_premium/
+frames_premium_web/
+assets/start-frame-reference.jpg
+review/premium-contact-sheet.jpg
+dist/astra-premium-scroll-motion.*
+generate_premium_motion_frames.py
+video_frames_premium/
+video_frames_story/
 
 # IDE
 .vscode/
